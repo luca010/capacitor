@@ -268,11 +268,14 @@ export async function checkAndInstallDependencies(config: Config, cordovaPlugins
           if (dep.$.url && dep.$.url.startsWith('http')) {
             plugin = dep.$.url;
           }
-          logInfo(`installing missing dependency plugin ${plugin}`);
           try {
-            await runCommand(`cd "${config.app.rootDir}" && npm install ${plugin}`);
-            await config.updateAppPackage();
-            needsUpdate = true;
+             let npmListPlugin = await runCommand(`cd "${config.app.rootDir}" && npm list "${plugin}"`);
+             if(npmListPlugin.indexOf(plugin) === -1){
+               logInfo(`installing missing dependency plugin ${plugin}`);
+               await runCommand(`cd "${config.app.rootDir}" && npm install ${plugin}`);
+               await config.updateAppPackage();
+               needsUpdate = true;
+             }
           } catch (e) {
             console.log("\n");
             logError(`couldn't install dependency plugin ${plugin}`);
